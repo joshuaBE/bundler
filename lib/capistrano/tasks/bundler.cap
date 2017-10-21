@@ -1,4 +1,9 @@
 namespace :bundler do
+
+  def bundle_path(role)
+    shared_path(role).join('bundle')
+  end
+
   desc <<-DESC
         Install the current Bundler environment. By default, gems will be \
         installed to the shared/bundle path. Gems in the development and \
@@ -22,12 +27,13 @@ namespace :bundler do
           set :bundle_clean_options, ""
     DESC
   task :install do
-    on fetch(:bundle_servers) do
+    on fetch(:bundle_servers) do |role|
       within release_path do
+        puts "#{role.hostname} bundle path: #{bundle_path(role)}"
         with fetch(:bundle_env_variables) do
           options = []
           options << "--gemfile #{fetch(:bundle_gemfile)}" if fetch(:bundle_gemfile)
-          options << "--path #{fetch(:bundle_path)}" if fetch(:bundle_path)
+          options << "--path #{bundle_path(role)}" if bundle_path(role)
           unless test(:bundle, :check, *options)
             options << "--binstubs #{fetch(:bundle_binstubs)}" if fetch(:bundle_binstubs)
             options << "--jobs #{fetch(:bundle_jobs)}" if fetch(:bundle_jobs)
